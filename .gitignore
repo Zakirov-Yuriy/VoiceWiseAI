@@ -17,6 +17,7 @@ __pycache__/
 *.db
 
 # Конфиденциальные данные
+cookies.txt
 
 .env
 

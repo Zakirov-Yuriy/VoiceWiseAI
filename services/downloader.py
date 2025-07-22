@@ -29,6 +29,7 @@ def is_youtube_url(url: str) -> bool:
     pattern = r"(https?://)?(www\.)?(youtube\.com|youtu\.be)/.+"
     return bool(re.match(pattern, url))
 
+
 async def download_youtube(url: str) -> str:
     # Если ссылка - это YouTube Shorts, преобразуем в обычную ссылку
     if "shorts" in url:
@@ -37,11 +38,14 @@ async def download_youtube(url: str) -> str:
 
     ydl_opts = {
         'format': 'mp4',
+        'cookies': 'cookies.txt',  # <--- добавили путь к куки
         'outtmpl': os.path.join(DOWNLOAD_DIR, '%(id)s.%(ext)s'),
         'quiet': True,
     }
+
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
         video_id = info_dict.get("id", None)
         file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.mp4")
+
     return file_path
