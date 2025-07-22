@@ -6,6 +6,7 @@ print(f"YT_COOKIES length: {len(cookies) if cookies else 'None'}")
 print(f"YT_COOKIES preview:\n{cookies[:200]}")
 
 if cookies:
+    cookies = cookies.replace("\\n", "\n")  # заменяем литералы \n на переносы строки
     with open("cookies.txt", "w", encoding="utf-8") as f:
         f.write(cookies)
 else:
