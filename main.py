@@ -2,9 +2,14 @@ import os
 
 # ✅ Сохраняем cookies.txt из переменной окружения (если задана)
 cookies = os.getenv("YT_COOKIES")
+print(f"YT_COOKIES length: {len(cookies) if cookies else 'None'}")
+print(f"YT_COOKIES preview:\n{cookies[:200]}")
+
 if cookies:
     with open("cookies.txt", "w", encoding="utf-8") as f:
         f.write(cookies)
+else:
+    print("YT_COOKIES is empty")
 
 import asyncio
 from aiogram import Bot, Dispatcher
