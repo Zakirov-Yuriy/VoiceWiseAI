@@ -31,14 +31,23 @@ def is_youtube_url(url: str) -> bool:
 
 
 async def download_youtube(url: str) -> str:
-    # Если ссылка - это YouTube Shorts, преобразуем в обычную ссылку
+    # Создаём cookies.txt из переменной окружения
+    cookies = os.getenv("YT_COOKIES")
+    if cookies:
+        cookies = cookies.replace("\\n", "\n")
+        with open("cookies.txt", "w", encoding="utf-8") as f:
+            f.write(cookies)
+    else:
+        print("YT_COOKIES is empty")
+
+    # Обрабатываем shorts ссылки
     if "shorts" in url:
         video_id = url.split("/")[-1]
         url = f"https://www.youtube.com/watch?v={video_id}"
 
     ydl_opts = {
         'format': 'mp4',
-        'cookies': 'cookies.txt',  # <--- добавили путь к куки
+        'cookies': 'cookies.txt',
         'outtmpl': os.path.join(DOWNLOAD_DIR, '%(id)s.%(ext)s'),
         'quiet': True,
     }

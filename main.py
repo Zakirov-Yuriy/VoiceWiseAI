@@ -2,8 +2,7 @@ import os
 
 # ✅ Сохраняем cookies.txt из переменной окружения (если задана)
 cookies = os.getenv("YT_COOKIES")
-print(f"YT_COOKIES length: {len(cookies) if cookies else 'None'}")
-print(f"YT_COOKIES preview:\n{cookies[:200]}")
+
 
 if cookies:
     cookies = cookies.replace("\\n", "\n")  # заменяем литералы \n на переносы строки
