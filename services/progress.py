@@ -1,12 +1,19 @@
-# services/progress.py
 class ProgressManager:
     def __init__(self, message):
         self.message = message
         self.msg = None
+        self.last_content = None  # для хранения последнего текста
 
     async def update(self, percent: int, text: str):
         bar = self.render_bar(percent)
         content = f"{bar} {percent}%\n{text}"
+
+        # Если текст не изменился, ничего не делать
+        if content == self.last_content:
+            return
+
+        self.last_content = content
+
         if self.msg:
             await self.msg.edit_text(content)
         else:

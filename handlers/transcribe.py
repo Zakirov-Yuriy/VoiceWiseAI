@@ -18,10 +18,12 @@ from services.audio_splitter import split_audio  # Импортируем
 import traceback
 import os
 import uuid
+import asyncio
 
 router = Router()
 
 MAX_LENGTH = 4000
+semaphore = asyncio.Semaphore(4)  # максимум 3 параллельных задачи
 
 
 @router.message(F.text)
@@ -35,6 +37,7 @@ async def handle_youtube(message: Message, state: FSMContext):
     await progress.update(5, "🔗 Скачиваю YouTube видео...")
 
     file_path = await download_youtube(text)
+    print(f"[DEBUG] file_path = {file_path}")
     if not file_path:
         await message.answer("❌ Не удалось скачать видео.")
         return
@@ -47,16 +50,26 @@ async def handle_youtube(message: Message, state: FSMContext):
 
     full_transcript = ""
 
-    for idx, chunk_path in enumerate(audio_chunks, start=1):
-        await progress.update(30 + int(60 * idx / len(audio_chunks)), f"🧠 Транскрибирую часть {idx}/{len(audio_chunks)}...")
-        chunk_text = await transcribe_audio(chunk_path, progress)
-        full_transcript += chunk_text + "\n"
-
-        # Можно удалить обработанный кусок, если не нужен
+    # Создаём корутину для транскрипции с прогрессом
+    async def process_chunk(idx, chunk_path, total_chunks):
+        await progress.update(30 + int(60 * idx / total_chunks), f"🧠 Транскрибирую часть {idx}/{total_chunks}...")
+        text = await transcribe_audio(chunk_path, progress)
         try:
             os.remove(chunk_path)
         except Exception:
             pass
+        return text
+
+    async def safe_process_chunk(*args, **kwargs):
+        async with semaphore:
+            return await process_chunk(*args, **kwargs)
+
+    # Параллельно обрабатываем все куски
+    tasks = [safe_process_chunk(idx, path, len(audio_chunks)) for idx, path in enumerate(audio_chunks, start=1)]
+    results = await asyncio.gather(*tasks)
+
+    full_transcript = "\n".join(results)
+
 
     await progress.update(90, "📄 Разбиваю текст на части...")
 

@@ -1,7 +1,7 @@
 from pydub import AudioSegment
 import os
 
-def split_audio(audio_path: str, chunk_length_ms: int = 5 * 60 * 1000) -> list[str]:
+def split_audio(audio_path: str, chunk_length_ms: int = 2 * 60 * 1000) -> list[str]:
     """
     Разбивает аудио файл на части длиной chunk_length_ms (по умолчанию 5 минут)
     Возвращает список путей к новым аудио файлам

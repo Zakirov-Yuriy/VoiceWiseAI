@@ -34,22 +34,32 @@ def is_youtube_url(url: str) -> bool:
     return bool(re.match(pattern, url))
 
 
-async def download_youtube(url: str) -> str:
-    # Обрабатываем shorts ссылки
-    if "shorts" in url:
-        video_id = url.split("/")[-1]
-        url = f"https://www.youtube.com/watch?v={video_id}"
+async def download_youtube(url: str) -> str | None:
+    try:
+        # Обрабатываем shorts ссылки
+        if "shorts" in url:
+            video_id = url.split("/")[-1]
+            url = f"https://www.youtube.com/watch?v={video_id}"
 
-    ydl_opts = {
-        'format': 'mp4',
-        'cookies': 'cookies.txt',
-        'outtmpl': os.path.join(DOWNLOAD_DIR, '%(id)s.%(ext)s'),
-        'quiet': True,
-    }
+        ydl_opts = {
+            'format': 'mp4',
+            'cookies': 'cookies.txt',
+            'outtmpl': os.path.join(DOWNLOAD_DIR, '%(id)s.%(ext)s'),
+            'quiet': True,
+        }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info_dict = ydl.extract_info(url, download=True)
-        video_id = info_dict.get("id", None)
-        file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.mp4")
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(url, download=True)
+            video_id = info_dict.get("id", None)
+            if not video_id:
+                print("[ERROR] video_id не найден.")
+                return None
 
-    return file_path
+            file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.mp4")
+
+        return file_path
+
+    except Exception as e:
+        print(f"[ERROR] Не удалось скачать видео: {e}")
+        return None
+
